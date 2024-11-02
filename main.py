@@ -72,10 +72,10 @@ if __name__ == "__main__":
     print(f"Current price of bitcoin: {bitcoinPrice:.2f}")
     notifyWhen = input("at what ammount would you like to get notified when BTC reaches? ")
 
-    if (bitcoinPrice < notifyWhen):
+    if (bitcoinPrice > notifyWhen):
         biggerThanNotif = True
         print("the program will now notify you when it reaches that number")
-    elif (bitcoinPrice > notifyWhen):
+    elif (bitcoinPrice < notifyWhen):
         biggerThanNotif = False
         print("the program will now notify you when it reaches that number")
     else:
@@ -84,9 +84,9 @@ if __name__ == "__main__":
     print(f"the program will refresh the price every hour")
     while True:
         sleep(3600)
-        if biggerThanNotif == True and bitcoinPrice >= notifyWhen:
+        if biggerThanNotif == True and bitcoinPrice <= notifyWhen:
             makeNotafication(bitcoinPrice)
-        elif biggerThanNotif == False and bitcoinPrice <= notifyWhen:
+        elif biggerThanNotif == False and bitcoinPrice >= notifyWhen:
             makeNotafication(bitcoinPrice)
 
 
