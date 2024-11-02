@@ -1,14 +1,15 @@
 import requests
 import os
 from sys import platform
+from time import sleep
 
-
-
+#Enter your api key here!
 API_KEY = 'ENTER YOUR API KEY'
 URL = 'https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest'
 
 bitcoinPrice = ''
 operatingSys = platform
+biggerThanNotif = False
 
 # Parameters for the request
 # Parameters can be found here:
@@ -67,6 +68,25 @@ def makeNotafication(price):
 
 if __name__ == "__main__":
     print("python notifier")
+
     print(f"Current price of bitcoin: {bitcoinPrice:.2f}")
     notifyWhen = input("at what ammount would you like to get notified when BTC reaches? ")
+
+    if (bitcoinPrice < notifyWhen):
+        biggerThanNotif = True
+        print("the program will now notify you when it reaches that number")
+    elif (bitcoinPrice > notifyWhen):
+        biggerThanNotif = False
+        print("the program will now notify you when it reaches that number")
+    else:
+        print("You can not enter a number that is equal to bitcoin price")
+    
+    print(f"the program will refresh the price every hour")
+    while True:
+        sleep(3600)
+        if biggerThanNotif == True and bitcoinPrice >= notifyWhen:
+            makeNotafication(bitcoinPrice)
+        elif biggerThanNotif == False and bitcoinPrice <= notifyWhen:
+            makeNotafication(bitcoinPrice)
+
 
