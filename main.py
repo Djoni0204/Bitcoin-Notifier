@@ -2,11 +2,15 @@ import requests
 import os
 from sys import platform
 from time import sleep
+from dotenv import load_dotenv
 
-#Enter your api key here!
-API_KEY = 'ENTER YOUR API KEY'
+load_dotenv()
+
+
+API_KEY = os.getenv("API_KEY")
 URL = 'https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest'
 
+print(API_KEY)
 bitcoinPrice = ''
 operatingSys = platform
 biggerThanNotif = False
@@ -23,24 +27,24 @@ headers = {
     'Accepts': 'application/json',
     'X-CMC_PRO_API_KEY': API_KEY,
 }
+def Fetch_Bitcoin_Price():
+    try:
+        # Makes the request to coinmarketcap.com's API
+        response = requests.get(URL, headers=headers, params=parameters)
+        response.raise_for_status()  # Check if the request was successful
+        data = response.json()
 
-try:
-    # Makes the request to coinmarketcap.com's API
-    response = requests.get(URL, headers=headers, params=parameters)
-    response.raise_for_status()  # Check if the request was successful
-    data = response.json()
+        # Extract Bitcoin price in USD
+        # Supported languages can be found here:
+        # https://coinmarketcap.com/api/documentation/v1/#section/Standards-and-Conventions
+        bitcoinPrice = data['data']['1']['quote']['USD']['price']
+        return bitcoinPrice
 
-    # Extract Bitcoin price in USD
-    # Supported languages can be found here:
-    # https://coinmarketcap.com/api/documentation/v1/#section/Standards-and-Conventions
-    bitcoinPrice = data['data']['1']['quote']['USD']['price']
-    print(f"The current price of Bitcoin is ${bitcoinPrice:.2f} USD")
-
-except requests.exceptions.RequestException as e:
-    print(f"An error occurred: {e}")
+    except requests.exceptions.RequestException as e:
+        print(f"An error occurred: {e}")
 
 
-def makeNotafication(price):
+def Make_Notafication(price):
     title = "Bitcoin Notifier"
     notaficationCmd = ""
     if (platform == "darwin"):
@@ -69,8 +73,19 @@ def makeNotafication(price):
 if __name__ == "__main__":
     print("python notifier")
 
-    print(f"Current price of bitcoin: {bitcoinPrice:.2f}")
-    notifyWhen = input("at what ammount would you like to get notified when BTC reaches? ")
+    bitcoinPrice = Fetch_Bitcoin_Price()
+    Make_Notafication(bitcoinPrice)
+
+    while True:
+        if(bitcoinPrice != None):
+            break
+        else:
+            print("Failed to fetch bitcoin price")
+            sleep(10)
+            pass
+    
+    print(f"Current price of bitcoin: ${bitcoinPrice:.2f}")
+    notifyWhen = float(input("at what ammount would you like to get notified when BTC reaches? "))
 
     if (bitcoinPrice > notifyWhen):
         biggerThanNotif = True
@@ -84,9 +99,13 @@ if __name__ == "__main__":
     print(f"the program will refresh the price every hour")
     while True:
         sleep(3600)
-        if biggerThanNotif == True and bitcoinPrice <= notifyWhen:
-            makeNotafication(bitcoinPrice)
-        elif biggerThanNotif == False and bitcoinPrice >= notifyWhen:
-            makeNotafication(bitcoinPrice)
+        bitcoinPrice = Fetch_Bitcoin_Price()
 
+        if bitcoinPrice != None:
+            if biggerThanNotif == True and bitcoinPrice <= notifyWhen:
+                Make_Notafication(bitcoinPrice)
+            elif biggerThanNotif == False and bitcoinPrice >= notifyWhen:
+                Make_Notafication(bitcoinPrice)
+        else:
+            print("Failed to fetch bitcoin Price")
 
